@@ -5,12 +5,16 @@
   "description": "backend of youtube with js and mongoose as database",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [
     "js",
     "mongoDB"
   ],
   "author": "Saad",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.11",
+    "prettier": "^3.6.2"
+  }
 }
