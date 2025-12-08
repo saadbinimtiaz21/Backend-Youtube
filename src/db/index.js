@@ -1,4 +1,4 @@
- import mongoose from "mongoose"
+import mongoose from "mongoose"
 import { saad_DB } from "../constants.js"
 
 const connect_DB = async () => {
