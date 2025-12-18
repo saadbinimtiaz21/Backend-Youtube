@@ -1,8 +1,8 @@
-import mongoose from "mongoose"
+import mongoose, { Schema } from "mongoose"
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 
-const userSchema = new mongoose.Schema(
+const userSchema = new Schema(
     {
         username: {
             type: String,
@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
         },
         WatchHistory:[
             {
-                type: mongoose.Schema.Types.ObjectId,
+                type: Schema.Types.ObjectId,
                 ref: "Video",
             }
         ],
@@ -60,12 +60,13 @@ const userSchema = new mongoose.Schema(
 
 // here we use function with callaback instead of arrow function to use 'this' keyword
 // because we are refercing to only password field of userschema to encrypt it before saving to database 
-userSchema.pre("save", async function(next){
+userSchema.pre("save", async function () {
    // check if password is modified or not
-    if(!this.isModified("Password")) return next();
+    if(!this.isModified("Password")) 
+        return 
 // encrypt the password using bcryptjs is changed.
     this.Password = await bcrypt.hash(this.Password , 10)
-    next()
+    
 })
 
 userSchema.methods.isPasswordCorrect = async function(Password){

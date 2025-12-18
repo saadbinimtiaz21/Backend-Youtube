@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadoncloudinary } from "../utils/cloudinary.js";
+import { uploadOncloudinary } from "../utils/cloudinary.js";
 import { ApiResponse} from "../utils/ApiResponse.js";
   
 
@@ -34,7 +34,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (
     [FullName, Email, username, Password].some((field) => field?.trim() === "")
   ) {
-    throw new ApiError(400, "All Fields are Required");
+    throw new ApiError(400, "All Fields are Required ");
   }
                 //3- check if user already exists
   const exiesteduser = await User.findOne({
@@ -45,9 +45,9 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, " User Already Exists");
   }
 
-            //4- how to retrieve files from req object from multer middleware
-  const avatarlocalpath = req.files ?. avatar[0] ?. path;
-  const coverImagelocalpath = req.files ?. coverImage ?. [0] ?. path;
+          //4- how to retrieve files from req object from multer middleware
+const avatarlocalpath = req.files ?. avatar[0] ?. path;
+const coverImagelocalpath = req.files ?. coverImage ?. [0] ?. path;
   
 console.log("Avatar path : ", avatarlocalpath);
 console.log("CoverImage path : ", coverImagelocalpath)
@@ -56,13 +56,13 @@ console.log("CoverImage path : ", coverImagelocalpath)
     throw new ApiError(400, "avatar File is required");
   }
                 //5- upload files to cloudinary
-  const avatar = await uploadoncloudinary(avatarlocalpath);
-  const coverImage = await uploadoncloudinary(coverImagelocalpath);
+  const avatar = await uploadOncloudinary(avatarlocalpath);
+  const coverImage = await uploadOncloudinary(coverImagelocalpath);
   
   if(!avatar)
     {
     // before entering into cloudinary if any error occurs we have to remove the local file
-    throw new ApiError(400 , "Error in uploading avatar Image");
+    throw new ApiError(400, "Error in uploading avatar Image");
   }
 
                 //6- create user object and enter into database 
