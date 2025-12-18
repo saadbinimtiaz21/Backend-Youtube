@@ -1,8 +1,8 @@
-import mongoose, {Schema} from "mongoose"
+import mongoose from "mongoose"
 import jwt from "jsonwebtoken"
-import bcrypt from "bcryptjs"
+import bcrypt from "bcrypt"
 
-const userSchema = new Schema(
+const userSchema = new mongoose.Schema(
     {
         username: {
             type: String,
@@ -10,24 +10,24 @@ const userSchema = new Schema(
             unique: true,
             lowercase: true,
             trim: true,
-            index: true    
+            index: true,    
         },
         Email:{
             type: String,
             required: true,
             unique:true,
             lowercase: true,
-            trim:true 
+            trim:true, 
         },
         FullName:{
             type: String,
             required: true,
             trim:true,
-            index: true
+            index: true,
         },
-        Avator:{
+        avatar:{
             type: String, // using cloudnry service to get link of image
-             required: true
+             required: true,
         },
         coverImage:{
             type: String, // using cloudanary to get link of image
@@ -35,8 +35,8 @@ const userSchema = new Schema(
         },
         WatchHistory:[
             {
-                type: Schema.Types.objectId,
-                ref: "Video"
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Video",
             }
         ],
 
@@ -46,10 +46,10 @@ const userSchema = new Schema(
             lowercase: true,
             uppercase: true,
             specialcharacter: true,
-            length: { min: 8, max: 15 }
+            length: { min: 8, max: 15 },
         },
         RefreshToken:{
-            type: String
+            type: String ,
         }
         
 },
@@ -77,7 +77,7 @@ userSchema.methods.generateAccessToken =  function (){
      return jwt.sign(
         {
         _id: this._id, // this use mongoose to get id of user
-        email: this.email,
+        Email: this.Email,
         username: this.username,
         FullName: this.FullName   
     },
