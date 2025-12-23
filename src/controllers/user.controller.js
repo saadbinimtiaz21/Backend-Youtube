@@ -3,7 +3,27 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOncloudinary } from "../utils/cloudinary.js";
 import { ApiResponse} from "../utils/ApiResponse.js";
+import { ref } from "process";
   
+
+const generateAccessandrefreshToken = async (userID) => {
+  try {
+    const user= await User.findOne(userID)
+   const AccessToken = user.generateAccessToken();
+   const RefreshToken =  user.generateRefreshToken();
+      // save in mongo db refresh token for user
+   user.RefreshToken = RefreshToken;
+  await user.save({validateBeforeSave: false});
+  
+  return {AccessToken , RefreshToken};
+  
+  //  console.log("Generating tokens for userID:", userID);
+  } 
+  catch (error) {
+    throw new ApiError(500, "Error in generating token")
+  }
+}
+
 
         //  logic building of Controllers
 
@@ -68,8 +88,8 @@ console.log("CoverImage path : ", coverImagelocalpath)
                 //6- create user object and enter into database 
 const user = await User.create({
     FullName,
-    avatar: avatar.url , // incase avatar url is not present then set default avatar
-    coverImage: coverImage?.url || "", // reason for "?" because cover image is optional
+    avatar: avatar.secure_url , // incase avatar url is not present then set default avatar
+    coverImage: coverImage?.secure_url || "", // reason for "?" because cover image is optional
     Email,
     Password,
     username 
@@ -84,9 +104,85 @@ const createduser = await User.findById(user._id).select(
     throw new ApiError(500 , "Something Went Wrong in Creating User")
  }
                     //  10-Return if user creates 
-    return res.status(201).json(
+   return res.status(201).json(
         new ApiResponse(200 , createduser, "User Registered Successfully")
     )
 });
 
-export { registerUser };
+                // Login User Controller
+
+const loginuser = asyncHandler(async(req, res)=>{
+  const {Email  , username , Password} = req.body
+        // 2- validations check
+  if(!Email || !username){
+   throw new ApiError (400 , "Email or Username is required")
+  }
+             // 3- check if user exists    
+  const user=await User.findOne({
+    $or:[{username} , {Email} ]
+  })
+
+  if(!user){
+    throw new ApiError(404, "User or Email not found!!")
+  }
+            // 4- check for password validation
+  const isPasswordvalid =await user.isPasswordCorrect(Password)
+
+  if(!isPasswordvalid){
+    throw new ApiError(401, "Invalid Passwords")
+  }
+      //  5- generate access token and refresh token
+ const {AccessToken , RefreshToken} =await generateAccessandrefreshToken(user._id)
+
+ // 6- remove password and refresh token from response(optional)
+ const loggedinuser = await User.findById(user._id).select
+ ("-Password -RefreshToken")
+        
+        //7- how to use cookies adn where to use them
+ const options = {
+    httponly: true, // only modified on server side {using both}
+    secure: true, // only modified on frontend 
+ }
+// single code break statement for my ease
+ return res.status(200).cookie
+ ("AccessToken", AccessToken , options)
+ .cookie("RefreshToken",RefreshToken, options)
+ .json(new ApiResponse(200,
+    {
+      // best practie to include only for user to save it into local storage otherwise there is no need.
+      user: loggedinuser, AccessToken, RefreshToken 
+    },
+    "User logged in Successfully"
+  )
+)
+
+});
+      // logout User
+  const logoutuser = asyncHandler(async(req , res) => {
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: {
+          RefreshToken: undefined
+        } 
+      },
+      {
+          new: true
+        }
+    )
+
+    const options = {
+      httponly: true, 
+      secure: true
+    }
+    return res
+    .status(200)
+    .clearCookie("AccessToken" , AccessToken)
+    .clearCookie("RefreshToken" , RefreshToken)
+    .json(new ApiResponse(200 , {} , "User Logged Out "))
+  })  
+
+export { registerUser,
+  loginuser,
+  logoutuser
+ };

@@ -60,13 +60,12 @@ const userSchema = new Schema(
 
 // here we use function with callaback instead of arrow function to use 'this' keyword
 // because we are refercing to only password field of userschema to encrypt it before saving to database 
-userSchema.pre("save", async function () {
+userSchema.pre("save", async function (next) {
    // check if password is modified or not
     if(!this.isModified("Password")) 
-        return 
+        return next();
 // encrypt the password using bcryptjs is changed.
     this.Password = await bcrypt.hash(this.Password , 10)
-    
 })
 
 userSchema.methods.isPasswordCorrect = async function(Password){
