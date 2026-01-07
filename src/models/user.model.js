@@ -43,12 +43,10 @@ const userSchema = new Schema(
         Password:{
             type: String,
             required: [true , "Password is Required"],
-            lowercase: true,
-            uppercase: true,
-            specialcharacter: true,
-            length: { min: 8, max: 15 },
+            // Keep password case and characters as provided — do not transform.
+            // Validation (length/special chars) can be handled at the application layer.
         },
-        RefreshToken:{
+        refreshToken:{
             type: String ,
         }
         
@@ -62,8 +60,8 @@ const userSchema = new Schema(
 // because we are refercing to only password field of userschema to encrypt it before saving to database 
 userSchema.pre("save", async function (next) {
    // check if password is modified or not
-    if(!this.isModified("Password")) 
-        return next();
+    if(!this.isModified("password")) 
+        // return next();
 // encrypt the password using bcryptjs is changed.
     this.Password = await bcrypt.hash(this.Password , 10)
 })
@@ -73,7 +71,7 @@ userSchema.methods.isPasswordCorrect = async function(Password){
    return await bcrypt.compare(Password , this.Password)
 }
 
-userSchema.methods.generateAccessToken =  function (){
+userSchema.methods.generateAccessToken = function (){
      return jwt.sign(
         {
         _id: this._id, // this use mongoose to get id of user
@@ -87,7 +85,7 @@ userSchema.methods.generateAccessToken =  function (){
     }
 ) 
 }
-userSchema.methods.generateRefreshToken = function(){
+userSchema.methods.generaterefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id
