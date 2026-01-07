@@ -48,8 +48,7 @@ const userSchema = new Schema(
         },
         refreshToken:{
             type: String ,
-        }
-        
+        }       
 },
 {
     timestamps: true
@@ -61,9 +60,10 @@ const userSchema = new Schema(
 userSchema.pre("save", async function (next) {
    // check if password is modified or not
     if(!this.isModified("password")) 
-        // return next();
+         return next();
 // encrypt the password using bcryptjs is changed.
     this.Password = await bcrypt.hash(this.Password , 10)
+    next()
 })
 
 userSchema.methods.isPasswordCorrect = async function(Password){
