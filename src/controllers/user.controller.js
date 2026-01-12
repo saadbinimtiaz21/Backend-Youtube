@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOncloudinary } from "../utils/cloudinary.js";
 import { ApiResponse} from "../utils/ApiResponse.js";
-import {jwt} from "jsonwebtoken"
+import jwt from "jsonwebtoken"
   
 
 const generateAccessandrefreshToken = async (userID) => {
@@ -309,13 +309,13 @@ return res.status(200)
  })
 
 const updateUsercoverImage = asyncHandler(async(req, res)=>{
- const coverImagelocalpath = req.file?.path
+const coverImagelocalpath = req.file?.path
  
- if(!coverImagelocalpath){
+if(!coverImagelocalpath){
   throw new ApiError(400 , "Cover Image File is required")
- }
+}
 
- const coverImage= await uploadOncloudinary(coverImagelocalpath)
+const coverImage= await uploadOncloudinary(coverImagelocalpath)
 if(!coverImage.secure_url){
   throw new ApiError(500, "Error While Uplaoding on coverImage" )
 }
@@ -328,13 +328,13 @@ if(!coverImage.secure_url){
     }
   },
   {new : true}
-).select("-Password")
+).select("-Password ")
 return res
 .status(200)
 .json(new ApiResponse(200 , {user} , "User coverImage Updated Successfully"))
 
 
- })
+})
 
 export { registerUser,
   loginuser,
@@ -345,4 +345,4 @@ export { registerUser,
   updateAccountDetails,
   updateUserAvatar,
   updateUsercoverImage
- };
+};
