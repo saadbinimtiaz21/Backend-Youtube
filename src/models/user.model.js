@@ -33,7 +33,7 @@ const userSchema = new Schema(
             type: String, // using cloudanary to get link of image
             
         },
-        WatchHistory:[
+        watchHistory:[
             {
                 type: Schema.Types.ObjectId,
                 ref: "Video",

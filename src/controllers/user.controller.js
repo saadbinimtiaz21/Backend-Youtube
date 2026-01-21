@@ -114,7 +114,6 @@ const createduser = await User.findById(user._id).select(
 });
 
                 // Login User Controller
-
 const loginuser = asyncHandler(async(req, res)=>{
   const {Email  , username , Password} = req.body
         // 2- validations check
@@ -161,7 +160,7 @@ const loginuser = asyncHandler(async(req, res)=>{
 )
 
 });
-      // logout User
+                // logout User
   const logoutuser = asyncHandler(async(req , res) => {
     await User.findByIdAndUpdate(
       req.user._id,
@@ -229,7 +228,7 @@ if (!user){
 
 })
                 // change password controller
-const changeCurrentpasword = asyncHandler(async(req, res)=>{
+const changeCurrentpassword = asyncHandler(async(req, res)=>{
   const {oldPassword , newPassword } = req.body // conpasword may be added later
   // we have to verify old password is correct or not
   // for that we have to get user from database
@@ -333,16 +332,144 @@ return res
 .status(200)
 .json(new ApiResponse(200 , {user} , "User coverImage Updated Successfully"))
 
+})
+
+const getUserChannelProfile = asyncHandler(async(req, res) => {
+  const {username} = req.params // req from url that username exist or not
+  if(!username?.trim()){
+    throw new ApiError(400 , "username is required")
+  }
+  // User.findOne({username}) find user by username thouh db is ok but timetaking.
+  // better to use aggrregation pipeline
+  const channel = await User.aggregate(
+    [
+      // we filter the document and get the specific user
+      {
+        $match:{
+          username : username ?. toLowerCase() 
+        }
+  },
+  {
+    // lookup for who are my subscribers
+    $lookup:{ // lookup is used to join two collections
+      from: "subscriptions",
+      localField: "_id",
+      foreignField: "channel",
+      as: "subscribers"
+    }
+  },
+  {
+    // lookup for who am i subscribing to
+    $lookup:{ 
+      from: "subscriptions",
+      localField: "_id",
+      foreignField: "subscriber",
+      as: "subscribedTo"
+    }
+  },
+  {
+    $addFields:{
+    subscribersCount: { $size: "$subscribers" }, // to count how many subscriber i have
+    channelisSubscribedToCount : { $size: "$subscribedTo"},
+    isSubscribed : {
+      $cond:{ // conditional operator to check if user is subscribed or not using $in
+          if:{$in:[req.user ?._id , "$subscribers.subscriber"]}, // check if current user id is in subscribers list
+          then: true,
+          else: false
+        }
+    }
+  }
+  },
+  {
+    // why to use project here because we dont want to send all data to frontend 
+    $project:{
+          // i dont want to send everything to frontend only selected things according to situation
+        FullName: 1, // 1 means include this field
+        username: 1,
+        subscribersCount: 1,
+        channelisSubscribedToCount: 1,
+        isSubscribed: 1,
+        avatar:1,
+        coverImage:1,
+        Email:1
+    }
+  }
+])
+ // check if channel exists optionally check the length of array
+if(!channel?.length){
+  throw new ApiError(404, "Chanel Does not exist")
+}
+ return res.status(200)
+ .json(ApiResponse(200 , channel[0] , "User channel Fetched Successfully")) 
 
 })
+
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+  /*
+ interview question also
+ does follow chunk of code gives the id of mongoose object or string?
+ answer is this particular piece of code give me an string id not mongoose object id
+ because moongoose stores id as object id but when we retrieve it from database it gives string id
+  req.user._id 
+    */
+   // follow steps how to convert string ids to object ids
+    const user = await User.aggregate([
+      {
+        $match:{
+          // here we implicitly create an object id from string id
+          _id: new mongoose.Types.ObjectId(req.user._id)   
+        }
+      },
+      {
+        $lookup:{
+          from: "videos",
+          localField: "watchHistory",
+          foreignField: "_id",
+          as: "watchhistory",
+          // sub pipleine to sort the watch history by createdAt field in descending order
+          pipeline:[
+            {
+              $lookup: {
+                from: "users",
+                localField:"owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline:[{
+                  $project:{
+                    FullName:1,
+                    username:1,
+                    avatar:1,
+                  }
+                },
+                {
+                  $addFields:{
+                    owner:{
+                      $first: "$owner"
+                    }
+                  }
+                }] 
+              }
+            },
+            
+          ]
+        }
+      }
+    ])
+
+    return res.status(200)
+    .json(new ApiResponse(200 , user[0].watchHistory , "User Watch History fetched Successfullu"))
+}) 
 
 export { registerUser,
   loginuser,
   logoutuser,
   refreshAccessToken,
-  changeCurrentpasword,
+  changeCurrentpassword,
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  updateUsercoverImage
+  updateUsercoverImage,
+  getUserChannelProfile,
+  getWatchHistory
 };
