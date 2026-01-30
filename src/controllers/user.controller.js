@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOncloudinary } from "../utils/cloudinary.js";
 import { ApiResponse} from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
-  
+import mongoose from "mongoose";
 
 const generateAccessandrefreshToken = async (userID) => {
   try {
@@ -38,7 +38,7 @@ const generateAccessandrefreshToken = async (userID) => {
 //  5- check for images  ,check for avatar
 //  6- uplaod them to cloudinary
 //  7- create an object for user and enter in db
-//  8- remove password and refresh token field from response
+//  8- remove Password and refresh token field from response
 //  9- check for user creation
 //  10-Return if user creates 
 
@@ -98,8 +98,8 @@ const user = await User.create({
     Password,
     username 
 })
-                //7- remove password and refresh token from response
-// extra call to database to get user details without password and refresh token
+                //7- remove Password and refresh token from response
+// extra call to database to get user details without Password and refresh token
 const createduser = await User.findById(user._id).select(
     "-Password -refreshToken"
 )
@@ -128,16 +128,17 @@ const loginuser = asyncHandler(async(req, res)=>{
   if(!user){
     throw new ApiError(404, "User or Email not found!!")
   }
-            // 4- check for password validation
+            // 4- check for Password validation
   const isPasswordvalid = await user.isPasswordCorrect(Password)
 
   if(!isPasswordvalid){
     throw new ApiError(401, "Invalid Password")
   }
       //  5- generate access token and refresh token
- const {AccessToken , refreshToken} = await generateAccessandrefreshToken(user._id)
+ const {AccessToken , refreshToken} = await 
+ generateAccessandrefreshToken(user._id)
 
- // 6- remove password and refresh token from response(optional)
+ // 6- remove Password and refresh token from response(optional)
  const loggedinuser = await User.findById(user._id).select
  ("-Password -refreshToken")
         
@@ -165,8 +166,9 @@ const loginuser = asyncHandler(async(req, res)=>{
     await User.findByIdAndUpdate(
       req.user._id,
       {
-        $set: {
-          refreshToken: undefined
+        // when i use as $set the refresh token field remains in db with value null and a bad practise
+        $unset: {
+          refreshToken: 1
         } 
       },
       {
@@ -180,8 +182,8 @@ const loginuser = asyncHandler(async(req, res)=>{
     }
     return res
     .status(200)
-    .clearCookie("AccessToken" ,AccessToken , options)
-    .clearCookie("refreshToken" ,refreshToken, options)
+    .clearCookie("AccessToken" , options)
+    .clearCookie("refreshToken" , options)
     .json(new ApiResponse(200 , {} , "User Logged Out Successfully"))
   })  
 
@@ -227,10 +229,10 @@ if (!user){
  }
 
 })
-                // change password controller
-const changeCurrentpassword = asyncHandler(async(req, res)=>{
+                // change Password controller
+const changeCurrentPassword = asyncHandler(async(req, res)=>{
   const {oldPassword , newPassword } = req.body // conpasword may be added later
-  // we have to verify old password is correct or not
+  // we have to verify old Password is correct or not
   // for that we have to get user from database
   // it means you have to make a req to databse for specific user
   
@@ -241,7 +243,7 @@ const changeCurrentpassword = asyncHandler(async(req, res)=>{
   if(!isPasswordCorrect){
     throw new ApiError(400 , "old Password is incorrect")
   }
-  // if correct then set new password
+  // if correct then set new Password
    user.Password = newPassword
   await user.save({validateBeforeSave: false})
 
@@ -274,7 +276,7 @@ const updateAccountDetails = asyncHandler(async(req,res)=>{
     },
     {new: true}
 
-  ).select("-Password ")
+  ).select("-Password")
  return res.status(200)
  .json(new ApiResponse(200 , user , "User Details Updated Successfully"))
 })
@@ -400,7 +402,7 @@ if(!channel?.length){
   throw new ApiError(404, "Chanel Does not exist")
 }
  return res.status(200)
- .json(ApiResponse(200 , channel[0] , "User channel Fetched Successfully")) 
+ .json(new ApiResponse(200 , channel[0] , "User channel Fetched Successfully")) 
 
 })
 
@@ -465,7 +467,7 @@ export { registerUser,
   loginuser,
   logoutuser,
   refreshAccessToken,
-  changeCurrentpassword,
+  changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,

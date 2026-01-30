@@ -18,7 +18,7 @@ try {
           const user =  await User.findById(decodeinfo?._id)
             .select("-Password -RefreshToken")
         if(!user){
-            throw new ApiError(401 , "Invalid Acces Token")
+            throw new ApiError(401 , "Invalid Access Token")
         }
     
         req.user = user;
@@ -33,3 +33,4 @@ try {
 // create new middleware(self/own) for Logging out user
 // reason to create is to reuse the code as we can do that in user.controller.js file
 // if we have to check only for once than there is no need to create this file
+// user dont have to logon again and again until token is expired

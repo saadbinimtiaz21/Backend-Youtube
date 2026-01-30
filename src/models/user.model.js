@@ -42,7 +42,7 @@ const userSchema = new Schema(
 
         Password:{
             type: String,
-            required: [true , "Password is Required"],
+            required: [true , "password is Required"],
             // Keep password case and characters as provided — do not transform.
             // Validation (length/special chars) can be handled at the application layer.
         },
@@ -57,13 +57,14 @@ const userSchema = new Schema(
 
 // here we use function with callaback instead of arrow function to use 'this' keyword
 // because we are refercing to only password field of userschema to encrypt it before saving to database 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
    // check if password is modified or not
-    if(!this.isModified("password")) 
-         return next();
+    if(!this.isModified("Password"))
+         return  
+        
 // encrypt the password using bcryptjs is changed.
-    this.Password = await bcrypt.hash(this.Password , 10)
-    next()
+    this.Password = await bcrypt.hash(this.Password, 10)
+    // next();
 })
 
 userSchema.methods.isPasswordCorrect = async function(Password){

@@ -1,6 +1,6 @@
 import {Router} from "express";
 import { loginuser, logoutuser, registerUser ,refreshAccessToken,
-    changeCurrentpassword, getCurrentUser, updateAccountDetails,
+    changeCurrentPassword, getCurrentUser, updateAccountDetails,
     updateUserAvatar, updateUsercoverImage, getUserChannelProfile,
     getWatchHistory } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.js"
@@ -36,7 +36,7 @@ router.route("/logout").post(
     logoutuser)
 router.route("/refresh-token").post(refreshAccessToken)
 
-router.route("/change-passward").post(verifyJWT,changeCurrentpassword ) 
+router.route("/change-passward").post(verifyJWT,changeCurrentPassword ) 
 
 router.route("/current-user").get(verifyJWT, getCurrentUser)
 
