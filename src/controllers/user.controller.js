@@ -231,7 +231,7 @@ if (!user){
 })
                 // change Password controller
 const changeCurrentPassword = asyncHandler(async(req, res)=>{
-  const {oldPassword , newPassword } = req.body // conpasword may be added later
+  const {oldPassword , newPassword } = req.body // conform pasword may be added later
   // we have to verify old Password is correct or not
   // for that we have to get user from database
   // it means you have to make a req to databse for specific user
@@ -410,7 +410,7 @@ if(!channel?.length){
 const getWatchHistory = asyncHandler(async (req, res) => {
   /*
  interview question also
- does follow chunk of code gives the id of mongoose object or string?
+ does follow piece of code gives the id of mongoose object or string?
  answer is this particular piece of code give me an string id not mongoose object id
  because moongoose stores id as object id but when we retrieve it from database it gives string id
   req.user._id 
@@ -463,7 +463,8 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200 , user[0].watchHistory , "User Watch History fetched Successfullu"))
 }) 
 
-export { registerUser,
+export { 
+  registerUser,
   loginuser,
   logoutuser,
   refreshAccessToken,

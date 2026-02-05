@@ -7,7 +7,7 @@ const videoSchema = new Schema(
             type: String,
             required: [true , "Title is Required"]
         },
-        VideoFile:{
+        videofile:{
             type: String, // using cloudnry service to get link of video
             required: [true , "Video File is Required"],            
         },
@@ -15,7 +15,7 @@ const videoSchema = new Schema(
             type: String, // using cloudnry service to get link of video
             required: [true , "Video File is Required"], 
         },
-        Description:{
+        description:{
             type: String,
             required: true
         },
