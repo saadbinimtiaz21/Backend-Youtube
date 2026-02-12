@@ -7,27 +7,27 @@ const videoSchema = new Schema(
             type: String,
             required: [true , "Title is Required"]
         },
-        videofile:{
+        videoFile:{
             type: String, // using cloudnry service to get link of video
             required: [true , "Video File is Required"],            
         },
-        Thumbnail:{
+        thumbnail:{
             type: String, // using cloudnry service to get link of video
-            required: [true , "Video File is Required"], 
+            required: [true , "Thumbnail is Required"], 
         },
         description:{
             type: String,
             required: true
         },
-        Duration:{
+        duration:{
             type: Number,
             required: true
         },
-         Views:{
+         views:{
             type: Number,
             default: 0
          },
-         IsPublished:{
+         isPublished:{
             type: Boolean,
             default: true
          },
